@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Data.SQLite;
+using System.Xml;
 
 namespace TestSqlite
 {
@@ -10,6 +8,10 @@ namespace TestSqlite
     {
         static void Main(string[] args)
         {
+            var db = LocalData.getInstance();
+            var list = db.InsertTaskList(new TaskList(){Title = "new"});
+            Console.WriteLine(list.Id);
+            Console.ReadLine();
         }
     }
 }

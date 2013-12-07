@@ -47,8 +47,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LocalData.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Task.cs" />
+    <Compile Include="TaskList.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
