@@ -32,9 +32,9 @@ namespace TestGoogleApi
                 ApplicationName = "ZTask Test Google Api",
             });
 
-            var list = service.Tasklists.Get("MDE4Nzg2MTYzODcwNzU2NzUyNzU6MTc0NjU1NDM3Mjow").Execute();
-            var localTask = new Task() {Title = "new"};
-            var remoteTask = service.Tasks.Insert(localTask, list.Id).Execute();
+//            var list = service.Tasklists.Get("MDE4Nzg2MTYzODcwNzU2NzUyNzU6MTc0NjU1NDM3Mjow").Execute();
+//            var localTask = new Task() {Title = "new"};
+//            var remoteTask = service.Tasks.Insert(localTask, list.Id).Execute();
 
 //            Tasks tasks = service.Tasks.List(list.Id).Execute();
 //            foreach(Task task in tasks.Items)
@@ -42,18 +42,18 @@ namespace TestGoogleApi
 //                Console.WriteLine("{0}|{1}|{2}|{3}", task.Title, task.Id, task.Parent, task.Position);
 //            }
             
-//            TaskLists taskLists = service.Tasklists.List().Execute();
-//            Console.WriteLine("TaskListsETag:{0}",taskLists.ETag);
-//            foreach (TaskList list in taskLists.Items)
-//            {
-//                Console.WriteLine("{0}|{1}",list.Title,list.Id);
-//                Tasks tasks = service.Tasks.List(list.Id).Execute();
-//                Console.WriteLine("Tasks:{0}", tasks.ETag);
-//                foreach(Task task in tasks.Items)
-//                {
-//                    Console.WriteLine("{0}|{1}|{2}", task.Title, task.Id, task.ETag);
-//                }
-//            }
+            TaskLists taskLists = service.Tasklists.List().Execute();
+            Console.WriteLine("TaskListsETag:{0}",taskLists.ETag);
+            foreach (TaskList list in taskLists.Items)
+            {
+                Console.WriteLine("{0}|{1}",list.Title,list.Id);
+                Tasks tasks = service.Tasks.List(list.Id).Execute();
+                Console.WriteLine("Tasks:{0}", tasks.ETag);
+                foreach(Task task in tasks.Items)
+                {
+                    Console.WriteLine("{0}|{1}", task.Title, task.Id);
+                }
+            }
 
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();

@@ -1,11 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestGoogleApi", "test\TestGoogleApi\TestGoogleApi.csproj", "{4ABAF599-0131-4B79-B67C-A1C1F2FF1BC8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSqlite", "test\TestSqlite\TestSqlite.csproj", "{93F56F08-843A-4F52-9C73-C29B7EAC8E6D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestLog4Net", "test\TestLog4Net\TestLog4Net.csproj", "{445CD414-9D8F-46C8-B7DE-8A25E6DD6B30}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSync", "test\TestSync\TestSync.csproj", "{FB38C312-92D8-48ED-B387-062A65D2C333}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,6 +29,10 @@ Global
 		{445CD414-9D8F-46C8-B7DE-8A25E6DD6B30}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{445CD414-9D8F-46C8-B7DE-8A25E6DD6B30}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{445CD414-9D8F-46C8-B7DE-8A25E6DD6B30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB38C312-92D8-48ED-B387-062A65D2C333}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB38C312-92D8-48ED-B387-062A65D2C333}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB38C312-92D8-48ED-B387-062A65D2C333}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB38C312-92D8-48ED-B387-062A65D2C333}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
