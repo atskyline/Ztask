@@ -48,10 +48,11 @@ namespace TestSync.Local
             return result;
         }
 
-        public void UpdateTaskList(TaskList taskList)
+        public TaskList UpdateTaskList(TaskList taskList)
         {
-            taskService.Tasklists.Update(taskList,taskList.Id).Execute();
+            var result = taskService.Tasklists.Update(taskList, taskList.Id).Execute();
             LOG.InfoFormat("Cloud Update TaskList {0}[{1}]", taskList.Title, taskList.Id);
+            return result;
         }
 
         public void DeleteTaskList(TaskList taskList)
@@ -72,10 +73,11 @@ namespace TestSync.Local
             return result;
         }
 
-        public void UpdateTask(Task task, TaskList list)
+        public Task UpdateTask(Task task, TaskList list)
         {
-            taskService.Tasks.Update(task, list.Id, task.Id).Execute();
+            var result = taskService.Tasks.Update(task, list.Id, task.Id).Execute();
             LOG.InfoFormat("Cloud Update Task {0}[{1}]", task.Title, task.Id);
+            return result;
         }
 
         public void DeleteTask(Task task, TaskList list)

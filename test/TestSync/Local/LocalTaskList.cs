@@ -17,6 +17,20 @@ namespace TestSync.Local
         {
             return (LocalTaskList)this.MemberwiseClone();
         }
+        public LocalTaskList Clone(TaskList list)
+        {
+            var clone = new LocalTaskList();
+            clone.LocalId = this.LocalId;
+            clone.LocalModify = this.LocalModify;
+            clone.LocalDelete = this.LocalDelete;
+            clone.ETag = list.ETag;
+            clone.Id = list.Id;
+            clone.Kind = list.Kind;
+            clone.SelfLink = list.SelfLink;
+            clone.Title = list.Title;
+            clone.Updated = list.Updated;
+            return clone;
+        }
 
         public override string ToString()
         {

@@ -106,50 +106,6 @@ CREATE TABLE IF NOT EXISTS Task(
             return result;
         }
 
-        public LocalTaskList GetTaskListByLocalId(Int64 localId)
-        {
-            LocalTaskList result = null;
-            using (var connection = new SQLiteConnection(CONNECT_STRING))
-            {
-                connection.Open();
-                using (var command = new SQLiteCommand(connection))
-                {
-                    command.CommandText = @"SELECT * FROM TaskList WHERE LocalId = @LocalId";
-                    command.Parameters.Add(new SQLiteParameter("@LocalId", localId));
-                    using (var reader = command.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            result = buildTaskList(reader);
-                        }
-                    }
-                }
-            }
-            return result;
-        }
-
-        public LocalTaskList GetTaskListById(String Id)
-        {
-            LocalTaskList result = null;
-            using (var connection = new SQLiteConnection(CONNECT_STRING))
-            {
-                connection.Open();
-                using (var command = new SQLiteCommand(connection))
-                {
-                    command.CommandText = @"SELECT * FROM TaskList WHERE Id = @Id";
-                    command.Parameters.Add(new SQLiteParameter("@Id", Id));
-                    using (var reader = command.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            result = buildTaskList(reader);
-                        }
-                    }
-                }
-            }
-            return result;
-        }
-
         public LocalTaskList InsertTaskList(LocalTaskList taskList)
         {
             LocalTaskList result = null;
@@ -172,23 +128,25 @@ CREATE TABLE IF NOT EXISTS Task(
             return result;
         }
 
-        public void UpdateTaskList(LocalTaskList taskList)
+        public LocalTaskList UpdateTaskList(LocalTaskList taskList)
         {
             using (var connection = new SQLiteConnection(CONNECT_STRING))
             {
                 connection.Open();
                 using (var command = new SQLiteCommand(connection))
                 {
-                    command.CommandText = @"UPDATE TaskList SET LocalModify = @LocalModify,LocalDelete = @LocalDelete,Id = @Id,Title = @Title WHERE LocalId = @LocalId;";
+                    command.CommandText = @"UPDATE TaskList SET LocalModify = 1,LocalDelete = @LocalDelete,Id = @Id,Title = @Title WHERE LocalId = @LocalId;";
                     command.Parameters.Add(new SQLiteParameter("@LocalId", taskList.LocalId));
-                    command.Parameters.Add(new SQLiteParameter("@LocalModify", taskList.LocalModify));
                     command.Parameters.Add(new SQLiteParameter("@LocalDelete", taskList.LocalDelete));
                     command.Parameters.Add(new SQLiteParameter("@Id", taskList.Id));
                     command.Parameters.Add(new SQLiteParameter("@Title", taskList.Title));
                     command.ExecuteNonQuery();
                 }
             }
+            var result = taskList.Clone();
+            result.LocalModify = true;
             LOG.Info("Local Update TaskList " + taskList);
+            return result;
         }
 
         public void DeleteTaskList(LocalTaskList taskList)
@@ -198,12 +156,41 @@ CREATE TABLE IF NOT EXISTS Task(
                 connection.Open();
                 using (var command = new SQLiteCommand(connection))
                 {
-                    command.CommandText = @"DELETE FROM TaskList WHERE LocalId = @LocalId;";
+                    command.CommandText = @"DELETE FROM TaskList WHERE LocalId = @LocalId;DELETE FROM Task WHERE LocalTaskListId = @LocalId;";
                     command.Parameters.Add(new SQLiteParameter("@LocalId", taskList.LocalId));
                     command.ExecuteNonQuery();
                 }
             }
             LOG.Info("Local Delete TaskList " + taskList);
+        }
+
+        public void DeleteTaskListLogic(LocalTaskList taskList)
+        {
+            using (var connection = new SQLiteConnection(CONNECT_STRING))
+            {
+                connection.Open();
+                using (var command = new SQLiteCommand(connection))
+                {
+                    command.CommandText = @"UPDATE TaskList SET LocalDelete = 1 WHERE LocalId = @LocalId;UPDATE Task SET LocalDelete = 1 WHERE LocalTaskListId = @LocalId;";
+                    command.Parameters.Add(new SQLiteParameter("@LocalId", taskList.LocalId));
+                    command.ExecuteNonQuery();
+                }
+            }
+            LOG.Info("Local Logic Delete TaskList " + taskList);
+        }
+
+        public void ClearTaskList()
+        {
+            using (var connection = new SQLiteConnection(CONNECT_STRING))
+            {
+                connection.Open();
+                using (var command = new SQLiteCommand(connection))
+                {
+                    command.CommandText = @"UPDATE TaskList SET LocalModify = 0;DELETE FROM TaskList WHERE LocalDelete = 1;";
+                    command.ExecuteNonQuery();
+                }
+            }
+            LOG.Info("Local Clear TaskList");
         }
 
         private LocalTask buildTask(SQLiteDataReader reader)
@@ -224,29 +211,7 @@ CREATE TABLE IF NOT EXISTS Task(
             };
         }
 
-        public LocalTask GetTaskById(String Id)
-        {
-            LocalTask result = null;
-            using (var connection = new SQLiteConnection(CONNECT_STRING))
-            {
-                connection.Open();
-                using (var command = new SQLiteCommand(connection))
-                {
-                    command.CommandText = @"SELECT * FROM Task WHERE Id = @Id";
-                    command.Parameters.Add(new SQLiteParameter("@Id", Id));
-                    using (var reader = command.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            result = buildTask(reader);
-                        }
-                    }
-                }
-            }
-            return result;
-        }
-
-        public List<LocalTask> GetTaskByList(LocalTaskList list)
+        public List<LocalTask> GetTasksByList(LocalTaskList list)
         {
             var result = new List<LocalTask>();
             using (var connection = new SQLiteConnection(CONNECT_STRING))
@@ -301,7 +266,7 @@ SELECT last_insert_rowid();";
             return result;
         }
 
-        public void UpdateTask(LocalTask task)
+        public LocalTask UpdateTask(LocalTask task)
         {
             using (var connection = new SQLiteConnection(CONNECT_STRING))
             {
@@ -310,12 +275,11 @@ SELECT last_insert_rowid();";
                 {
                     command.CommandText =
 @"UPDATE Task
-SET LocalTaskListId = @LocalTaskListId ,LocalModify = @LocalModify,LocalDelete = @LocalDelete,Id = @Id,Title = @Title,
+SET LocalTaskListId = @LocalTaskListId ,LocalModify = 1,LocalDelete = @LocalDelete,Id = @Id,Title = @Title,
 ETag = @ETag, Due = @Due, Notes = @Notes, Parent = @Parent, Position = @Position, Status = @Status
 WHERE LocalId = @LocalId;";
                     command.Parameters.Add(new SQLiteParameter("@LocalId", task.LocalId));
                     command.Parameters.Add(new SQLiteParameter("@LocalTaskListId", task.LocalTaskListId));
-                    command.Parameters.Add(new SQLiteParameter("@LocalModify", task.LocalModify));
                     command.Parameters.Add(new SQLiteParameter("@LocalDelete", task.LocalDelete));
                     command.Parameters.Add(new SQLiteParameter("@Id", task.Id));
                     command.Parameters.Add(new SQLiteParameter("@Title", task.Title));
@@ -329,7 +293,10 @@ WHERE LocalId = @LocalId;";
                     command.ExecuteNonQuery();
                 }
             }
+            var result = task.Clone();
+            result.LocalModify = true;
             LOG.Info("Local Update Task " + task);
+            return result;
         }
 
         public void DeleteTask(LocalTask task)
@@ -347,5 +314,33 @@ WHERE LocalId = @LocalId;";
             LOG.Info("Local Delete Task " + task);
         }
 
+        public void DeleteTaskLogic(LocalTask task)
+        {
+            using (var connection = new SQLiteConnection(CONNECT_STRING))
+            {
+                connection.Open();
+                using (var command = new SQLiteCommand(connection))
+                {
+                    command.CommandText = @"UPDATE Task SET LocalDelete = 1 WHERE LocalId = @LocalId;";
+                    command.Parameters.Add(new SQLiteParameter("@LocalId", task.LocalId));
+                    command.ExecuteNonQuery();
+                }
+            }
+            LOG.Info("Local Logic Delete Task " + task);
+        }
+
+        public void ClearTask()
+        {
+            using (var connection = new SQLiteConnection(CONNECT_STRING))
+            {
+                connection.Open();
+                using (var command = new SQLiteCommand(connection))
+                {
+                    command.CommandText = @"UPDATE Task SET LocalModify = 0;DELETE FROM Task WHERE LocalDelete = 1;";
+                    command.ExecuteNonQuery();
+                }
+            }
+            LOG.Info("Local Clear Task");
+        }
     }
 }
