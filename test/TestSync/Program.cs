@@ -8,6 +8,9 @@ namespace TestSync
     {
         static void Main(string[] args)
         {
+//            var localData = LocalData.getInstance();
+//            var list = localData.GetAllTaskList()[6];
+//            localData.InsertTask(new LocalTask() {Title = "new1",LocalTaskListId = list.LocalId});
             var syncUtil = new SyncUtil();
             try
             {
@@ -17,7 +20,6 @@ namespace TestSync
             {
                 Console.WriteLine("网络异常");
             }
-            
             Console.ReadLine();
         }
     }

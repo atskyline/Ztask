@@ -33,7 +33,7 @@ namespace TestSync.Local
                 HttpClientFactory = new ProxyableHttpClientFactory(Proxy),
                 HttpClientInitializer = credential,
             });
-            LOG.Debug("Get TasksService Success");
+            LOG.Info("Get TasksService Success");
         }
 
         public List<TaskList> GetAllTaskList()

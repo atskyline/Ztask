@@ -164,7 +164,7 @@ CREATE TABLE IF NOT EXISTS Task(
             LOG.Info("Local Delete TaskList " + taskList);
         }
 
-        public void DeleteTaskListLogic(LocalTaskList taskList)
+        public LocalTaskList DeleteTaskListLogic(LocalTaskList taskList)
         {
             using (var connection = new SQLiteConnection(CONNECT_STRING))
             {
@@ -176,7 +176,10 @@ CREATE TABLE IF NOT EXISTS Task(
                     command.ExecuteNonQuery();
                 }
             }
+            var result = taskList.Clone();
+            result.LocalDelete = true;
             LOG.Info("Local Logic Delete TaskList " + taskList);
+            return result;
         }
 
         public void ClearTaskList()
@@ -199,6 +202,7 @@ CREATE TABLE IF NOT EXISTS Task(
             {
                 LocalId = (Int64)reader["LocalId"],
                 LocalModify = (Boolean)reader["LocalModify"],
+                LocalTaskListId = (Int64)reader["LocalTaskListId"],
                 LocalDelete = (Boolean)reader["LocalDelete"],
                 Id = CastToString(reader["Id"]),
                 Title = CastToString(reader["Title"]),
@@ -314,7 +318,7 @@ WHERE LocalId = @LocalId;";
             LOG.Info("Local Delete Task " + task);
         }
 
-        public void DeleteTaskLogic(LocalTask task)
+        public LocalTask DeleteTaskLogic(LocalTask task)
         {
             using (var connection = new SQLiteConnection(CONNECT_STRING))
             {
@@ -327,6 +331,9 @@ WHERE LocalId = @LocalId;";
                 }
             }
             LOG.Info("Local Logic Delete Task " + task);
+            var result = task.Clone();
+            result.LocalDelete = true;
+            return result;
         }
 
         public void ClearTask()

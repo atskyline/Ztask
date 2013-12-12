@@ -45,11 +45,11 @@ namespace TestGoogleApi
             foreach (TaskList list in taskLists.Items)
             {
                 Console.WriteLine("{0}|{1}",list.Title,list.Id);
-                Tasks tasks = service.Tasks.List(list.Id).Execute();
-                foreach(Task task in tasks.Items)
-                {
-                    Console.WriteLine("{0}|{1}", task.Title, task.ETag);
-                }
+//                Tasks tasks = service.Tasks.List(list.Id).Execute();
+//                foreach(Task task in tasks.Items)
+//                {
+//                    Console.WriteLine("{0}|{1}", task.Title, task.ETag);
+//                }
             }
 
             Console.ReadKey();
