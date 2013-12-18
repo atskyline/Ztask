@@ -117,6 +117,12 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="YamlDotNet.Core">
+      <HintPath>..\..\packages\YamlDotNet.Core.2.2.0\lib\net35\YamlDotNet.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="YamlDotNet.RepresentationModel">
+      <HintPath>..\..\packages\YamlDotNet.RepresentationModel.2.2.0\lib\net35\YamlDotNet.RepresentationModel.dll</HintPath>
+    </Reference>
     <Reference Include="Zlib.Portable">
       <HintPath>..\..\packages\Zlib.Portable.1.9.2\lib\portable-net4+sl4+wp71+win8\Zlib.Portable.dll</HintPath>
     </Reference>
@@ -126,13 +132,19 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Model\Design\DataService.cs" />
-    <Compile Include="Model\Core\DataItem.cs" />
-    <Compile Include="Model\Service\DataService.cs" />
-    <Compile Include="Model\Interface\IDataService.cs" />
-    <Compile Include="ViewModel\MainViewModel.cs" />
+    <Compile Include="AppConfig.cs" />
+    <Compile Include="Model\Core\Cloud\CloudData.cs" />
+    <Compile Include="Model\Core\Cloud\ProxyableHttpClientFactory.cs" />
+    <Compile Include="Model\Core\Local\LocalData.cs" />
+    <Compile Include="Model\Core\Local\LocalTask.cs" />
+    <Compile Include="Model\Core\Local\LocalTaskList.cs" />
+    <Compile Include="Model\Core\SyncUtil.cs" />
+    <Compile Include="Util.cs" />
+    <Compile Include="ViewModel\ITaskViewModel.cs" />
+    <Compile Include="ViewModel\TaskViewModelDesign.cs" />
+    <Compile Include="ViewModel\TaskViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
-    <Page Include="View\MainWindow.xaml">
+    <Page Include="View\TaskWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -140,8 +152,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="View\MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+    <Compile Include="View\TaskWindow.xaml.cs">
+      <DependentUpon>TaskWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -164,6 +176,9 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="app.config" />
+    <Content Include="log4net.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

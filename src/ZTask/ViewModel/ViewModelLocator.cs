@@ -12,8 +12,6 @@
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Ioc;
 using Microsoft.Practices.ServiceLocation;
-using ZTask.Model.Interface;
-using ZTask.Model.Service;
 
 namespace ZTask.ViewModel
 {
@@ -25,21 +23,19 @@ namespace ZTask.ViewModel
 
             if (ViewModelBase.IsInDesignModeStatic)
             {
-                SimpleIoc.Default.Register<IDataService, Model.Design.DataService>();
+                SimpleIoc.Default.Register<ITaskViewModel, TaskViewModelDesign>();
             }
             else
             {
-                SimpleIoc.Default.Register<IDataService, DataService>();
+                SimpleIoc.Default.Register<ITaskViewModel, TaskViewModel>();
             }
-
-            SimpleIoc.Default.Register<MainViewModel>();
         }
 
-        public MainViewModel Main
+        public ITaskViewModel TaskViewModel
         {
             get
             {
-                return ServiceLocator.Current.GetInstance<MainViewModel>();
+                return ServiceLocator.Current.GetInstance<ITaskViewModel>();
             }
         }
 
