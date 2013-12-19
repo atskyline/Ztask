@@ -7,26 +7,30 @@ namespace ZTask
     public class AppConfig
     {
         public String Proxy { get; set; }
+        public String Background { get; set; }
+        public String TextForeground { get; set; }
 
         public static String ConfigFilePath = "./config.yaml";
 
         private static AppConfig _instance;
         public static AppConfig Load()
         {
-            if (_instance != null)
+            if (_instance == null)
             {
-                return _instance;
-            }
-
-            if (File.Exists(ConfigFilePath))
-            {
-                using (var reader = new StreamReader(File.OpenRead(ConfigFilePath)))
+                if (File.Exists(ConfigFilePath))
                 {
-                    return new Deserializer().Deserialize<AppConfig>(reader);
+                    using (var reader = new StreamReader(File.OpenRead(ConfigFilePath)))
+                    {
+                        _instance = new Deserializer().Deserialize<AppConfig>(reader);
+                    }
+                }
+                else
+                {
+                    _instance = new AppConfig();
                 }
             }
-
-            return new AppConfig();
+            
+            return _instance;
         }
 
         public void Save()

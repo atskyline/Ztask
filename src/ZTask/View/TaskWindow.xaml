@@ -5,34 +5,42 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ignore="http://www.ignore.com"
         mc:Ignorable="d ignore"
-        Height="400"
-        Width="300"
-        Title="MVVM Light Application"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        ResizeMode="CanResizeWithGrip" 
+        Height="300"
+        Width="200"
+        MinHeight="200"
+        MinWidth="200"
         Loaded="OnLoaded"
         Closed="OnClosed"
+        MouseLeftButtonDown="WindowDragMove" 
+        Background="{Binding Background}"
         DataContext="{Binding TaskViewModel, Source={StaticResource Locator}}">
-    <Window.Resources>
-        <ResourceDictionary>
-            <DataTemplate x:Key="TaskTemplate">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <CheckBox Grid.Column="0" IsChecked="{Binding IsCompleted}" />
-                    <TextBox Grid.Column="1" Text="{Binding Title}" Cursor="Arrow" IsReadOnly="True" BorderThickness="0" LostFocus="OnItemLostFocus" MouseDoubleClick="OnItemDoubleClick"/>
-                </Grid>
-            </DataTemplate>
-        </ResourceDictionary>
-    </Window.Resources>
     <DockPanel>
-        <Label DockPanel.Dock="Top" Content="{Binding TaskList.Title}"/>
+        <Label DockPanel.Dock="Top" Content="{Binding TaskList.Title}" Foreground="{Binding TextForeground}"/>
 
         <ListBox 
+            x:Name="ListBox"
             ItemsSource="{Binding Tasks}" 
-            ItemTemplate="{StaticResource TaskTemplate}"
+            Background="Transparent"
+            BorderThickness="0"
             HorizontalContentAlignment="Stretch">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid GotFocus="OnItemGotFocus">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <CheckBox Grid.Column="0" IsChecked="{Binding IsCompleted}" VerticalAlignment="Center" />
+                        <TextBox Grid.Column="1" BorderThickness="0"
+                                 Text="{Binding Title}" 
+                                 Foreground="{Binding DataContext.TextForeground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}"
+                                 Background="Transparent"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
         </ListBox>
-
     </DockPanel>
 </Window>

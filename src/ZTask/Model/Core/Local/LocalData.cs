@@ -38,6 +38,13 @@ namespace ZTask.Model.Core.Local
             return obj.ToString();
         }
 
+        private static DateTime? CastToDateTime(Object obj)
+        {
+            if (obj == DBNull.Value || obj == null)
+                return null;
+            return (DateTime) obj;
+        }
+
         /// <summary>
         /// 初始化数据库，包括新建表等操作
         /// </summary>
@@ -88,6 +95,28 @@ CREATE TABLE IF NOT EXISTS Task(
             };
         }
 
+        public LocalTaskList GetTaskList(Int64 listId)
+        {
+            LocalTaskList result = null;
+            using (var connection = new SQLiteConnection(ConnectString))
+            {
+                connection.Open();
+                using (var command = new SQLiteCommand(connection))
+                {
+                    command.CommandText = @"SELECT * FROM TaskList WHERE LocalId = @LocalId;";
+                    command.Parameters.Add(new SQLiteParameter("@LocalId", listId));
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            result = buildTaskList(reader);
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
         public List<LocalTaskList> GetAllTaskList()
         {
             var result = new List<LocalTaskList>();
@@ -96,7 +125,7 @@ CREATE TABLE IF NOT EXISTS Task(
                 connection.Open();
                 using (var command = new SQLiteCommand(connection))
                 {
-                    command.CommandText = @"SELECT * FROM TaskList";
+                    command.CommandText = @"SELECT * FROM TaskList;";
                     using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
@@ -210,7 +239,7 @@ CREATE TABLE IF NOT EXISTS Task(
                 Id = CastToString(reader["Id"]),
                 Title = CastToString(reader["Title"]),
                 ETag = CastToString(reader["ETag"]),
-                Due = (DateTime?)reader["Due"],
+                Due = CastToDateTime(reader["Due"]),
                 Notes = CastToString(reader["Notes"]),
                 Parent = CastToString(reader["Parent"]),
                 Position = CastToString(reader["Position"]),

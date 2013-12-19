@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using ZTask.ViewModel;
 
 namespace ZTask.View
@@ -11,6 +12,16 @@ namespace ZTask.View
         public TaskWindow()
         {
             InitializeComponent();
+        }
+
+        public TaskWindow(Int64 taskListId):this()
+        {
+            (this.DataContext as TaskViewModel).LoadData(taskListId);
+        }
+
+        private void WindowDragMove(object sender, MouseButtonEventArgs e)
+        {
+            this.DragMove();
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -25,13 +36,18 @@ namespace ZTask.View
 
         private void OnItemDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            ((TextBox)sender).SelectAll();
-            ((TextBox)sender).IsReadOnly = false;
+//            ((TextBox)sender).SelectAll();
+//            ((TextBox)sender).IsReadOnly = false;
         }
 
         private void OnItemLostFocus(object sender, RoutedEventArgs e)
         {
-            ((TextBox)sender).IsReadOnly = true;
+//            ((TextBox)sender).IsReadOnly = true;
+        }
+
+        private void OnItemGotFocus(object sender, RoutedEventArgs e)
+        {
+            this.ListBox.SelectedItem = (sender as Grid).DataContext; 
         }
     }
 }
