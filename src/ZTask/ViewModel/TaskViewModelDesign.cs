@@ -1,19 +1,28 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Media;
 using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
 using ZTask.Model.Core.Local;
+using ZTask.View;
 
 namespace ZTask.ViewModel
 {
     public class TaskViewModelDesign : ViewModelBase, ITaskViewModel
     {
-       
-
+        public TaskWindow View { set; private get; }
         public LocalTaskList TaskList { get; private set; }
         public ObservableCollection<LocalTask> Tasks { get; private set; }
+        public RelayCommand LoadWindowInfo { get; private set; }
+        public RelayCommand SaveWindowInfo { get; private set; }
+        public RelayCommand AddTaskCommand { get; private set; }
+        public RelayCommand<LocalTask> EditTaskCommand { get; private set; }
+        public RelayCommand<LocalTask> DeleteTaskCommand { get; private set; }
+        public RelayCommand CloseWindowCommand { get; private set; }
         public Brush Background { get; private set; }
         public Brush TextForeground { get; private set; }
+        public Boolean IsShowCompleted { get; set; }
 
         public TaskViewModelDesign()
         {

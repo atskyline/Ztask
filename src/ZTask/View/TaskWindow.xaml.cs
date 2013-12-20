@@ -12,6 +12,7 @@ namespace ZTask.View
         public TaskWindow()
         {
             InitializeComponent();
+            (this.DataContext as ITaskViewModel).View = this;
         }
 
         public TaskWindow(Int64 taskListId):this()
@@ -22,16 +23,6 @@ namespace ZTask.View
         private void WindowDragMove(object sender, MouseButtonEventArgs e)
         {
             this.DragMove();
-        }
-
-        private void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            //TODO 加载 Top Left Height Width 
-        }
-
-        private void OnClosed(object sender, EventArgs e)
-        {
-            //TODO 保存 Top Left Height Width 
         }
 
         private void OnItemDoubleClick(object sender, MouseButtonEventArgs e)
@@ -49,5 +40,12 @@ namespace ZTask.View
         {
             this.ListBox.SelectedItem = (sender as Grid).DataContext; 
         }
+
+        private void OnWindowDeactivated(object sender, EventArgs eventArgs)
+        {
+            this.ListBox.SelectedItem = null;
+        }
+
+        //TODO CheckBox变化或TextBox完成编辑时通知VM
     }
 }
