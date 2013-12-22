@@ -13,11 +13,13 @@ namespace ZTask.ViewModel
         //Data
         LocalTaskList TaskList { get; }
         ObservableCollection<LocalTask> Tasks { get; }
+        WindowInfo WindowInfo { get; }
         //Command
         RelayCommand LoadWindowInfo { get; }
         RelayCommand SaveWindowInfo { get; }
         RelayCommand AddTaskCommand { get; }
         RelayCommand<LocalTask> EditTaskCommand { get; }
+        RelayCommand<LocalTask> UpdateTaskCommand { get; }
         RelayCommand<LocalTask> DeleteTaskCommand { get; }
         RelayCommand CloseWindowCommand { get; }
         //Config

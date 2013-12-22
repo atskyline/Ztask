@@ -14,10 +14,12 @@ namespace ZTask.ViewModel
         public TaskWindow View { set; private get; }
         public LocalTaskList TaskList { get; private set; }
         public ObservableCollection<LocalTask> Tasks { get; private set; }
+        public WindowInfo WindowInfo { get; private set; }
         public RelayCommand LoadWindowInfo { get; private set; }
         public RelayCommand SaveWindowInfo { get; private set; }
         public RelayCommand AddTaskCommand { get; private set; }
         public RelayCommand<LocalTask> EditTaskCommand { get; private set; }
+        public RelayCommand<LocalTask> UpdateTaskCommand { get; private set; }
         public RelayCommand<LocalTask> DeleteTaskCommand { get; private set; }
         public RelayCommand CloseWindowCommand { get; private set; }
         public Brush Background { get; private set; }

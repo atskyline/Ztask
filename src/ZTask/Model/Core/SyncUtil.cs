@@ -29,8 +29,8 @@ namespace ZTask.Model.Core
             {
                 _localData = LocalData.Instance;
                 _cloudData.Authorize();
-                SyncAllTaskLists(_cloudData.GetAllTaskList(), _localData.GetAllTaskList());
-                _localData.GetAllTaskList().ForEach((list) =>
+                SyncAllTaskLists(_cloudData.GetAllTaskList(), _localData.GetAllTaskList(true));
+                _localData.GetAllTaskList(true).ForEach((list) =>
                 {
                     SyncTaskList(list);
                 });
@@ -97,7 +97,7 @@ namespace ZTask.Model.Core
         private void SyncTaskList(LocalTaskList list)
         {
             Log.Info("Start Sync TaskList: " + list);
-            var localTasks = _localData.GetTasksByList(list);
+            var localTasks = _localData.GetTasksByList(list, true);
             var cloudTasks = _cloudData.GetTaskByList(list);
 
             Log.Info("Sync Task Local Insert");

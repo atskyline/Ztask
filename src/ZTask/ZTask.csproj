@@ -139,6 +139,7 @@
     <Compile Include="Model\Core\Local\LocalData.cs" />
     <Compile Include="Model\Core\Local\LocalTask.cs" />
     <Compile Include="Model\Core\Local\LocalTaskList.cs" />
+    <Compile Include="Model\Core\Local\WindowInfo.cs" />
     <Compile Include="Model\Core\SyncUtil.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="ViewModel\ITaskViewModel.cs" />
@@ -153,6 +154,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="View\Converter\HideCompletedTaskConverter.cs" />
     <Compile Include="View\Converter\Object2VisibilityConverter.cs" />
     <Compile Include="View\TaskWindow.xaml.cs">
       <DependentUpon>TaskWindow.xaml</DependentUpon>
@@ -178,6 +180,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="app.config" />
+    <None Include="README.md" />
     <Resource Include="Images\Add.png" />
     <Resource Include="Images\Checked.png" />
     <Resource Include="Images\Close.png" />

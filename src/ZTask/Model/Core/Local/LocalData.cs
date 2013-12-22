@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
+using System.Windows;
 using log4net;
 
 namespace ZTask.Model.Core.Local
@@ -19,7 +20,7 @@ namespace ZTask.Model.Core.Local
                 if (_instance == null)
                 {
                     _instance = new LocalData();
-                    _instance.init();
+                    _instance.Init();
                 }
                 return _instance;
             }
@@ -48,7 +49,7 @@ namespace ZTask.Model.Core.Local
         /// <summary>
         /// 初始化数据库，包括新建表等操作
         /// </summary>
-        private void init()
+        private void Init()
         {
             using (SQLiteConnection connection = new SQLiteConnection(ConnectString))
             {
@@ -77,13 +78,23 @@ CREATE TABLE IF NOT EXISTS Task(
     Position TEXT,
     Status TEXT
 );
+CREATE TABLE IF NOT EXISTS WindowInfo(
+    Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    TaskListId INTEGER,
+    Left REAL,
+    Top REAL,
+    Height REAL,
+    Width REAL,
+    IsHideWindow BOOLEAN,
+    IsShowCompleted BOOLEAN
+);
 ";
                     command.ExecuteNonQuery();
                 }
             }
         }
 
-        private LocalTaskList buildTaskList(SQLiteDataReader reader)
+        private static LocalTaskList BuildTaskList(SQLiteDataReader reader)
         {
             return new LocalTaskList
             {
@@ -109,7 +120,7 @@ CREATE TABLE IF NOT EXISTS Task(
                     {
                         if (reader.Read())
                         {
-                            result = buildTaskList(reader);
+                            result = BuildTaskList(reader);
                         }
                     }
                 }
@@ -117,7 +128,7 @@ CREATE TABLE IF NOT EXISTS Task(
             return result;
         }
 
-        public List<LocalTaskList> GetAllTaskList()
+        public List<LocalTaskList> GetAllTaskList(Boolean includeDeleted)
         {
             var result = new List<LocalTaskList>();
             using (var connection = new SQLiteConnection(ConnectString))
@@ -125,12 +136,16 @@ CREATE TABLE IF NOT EXISTS Task(
                 connection.Open();
                 using (var command = new SQLiteCommand(connection))
                 {
-                    command.CommandText = @"SELECT * FROM TaskList;";
+                    command.CommandText = @"SELECT * FROM TaskList ";
+                    if (!includeDeleted)
+                    {
+                        command.CommandText += " AND LocalDelete = 0 ";
+                    }
                     using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            result.Add(buildTaskList(reader));
+                            result.Add(BuildTaskList(reader));
                         }
                     }
                 }
@@ -154,9 +169,15 @@ CREATE TABLE IF NOT EXISTS Task(
                     var localId = (long)command.ExecuteScalar();
                     result = taskList.Clone();
                     result.LocalId = localId;
+                    Log.Info("Local Insert TaskList " + result);
+                    //Insert WindowInfo
+                    command.Parameters.Clear();
+                    command.CommandText = @"INSERT INTO WindowInfo VALUES (null,@TaskListId,0,0,0,0,0,0);";
+                    command.Parameters.Add(new SQLiteParameter("@TaskListId", localId));
+                    command.ExecuteNonQuery();
+                    Log.Info("Local Insert WindowInfo");
                 }
             }
-            Log.Info("Local Insert TaskList " + result);
             return result;
         }
 
@@ -188,7 +209,9 @@ CREATE TABLE IF NOT EXISTS Task(
                 connection.Open();
                 using (var command = new SQLiteCommand(connection))
                 {
-                    command.CommandText = @"DELETE FROM TaskList WHERE LocalId = @LocalId;DELETE FROM Task WHERE LocalTaskListId = @LocalId;";
+                    command.CommandText = @"DELETE FROM TaskList WHERE LocalId = @LocalId;
+                                            DELETE FROM Task WHERE LocalTaskListId = @LocalId;
+                                            DELETE FROM WindowInfo WHERE TaskListId = @LocalId;";
                     command.Parameters.Add(new SQLiteParameter("@LocalId", taskList.LocalId));
                     command.ExecuteNonQuery();
                 }
@@ -203,7 +226,9 @@ CREATE TABLE IF NOT EXISTS Task(
                 connection.Open();
                 using (var command = new SQLiteCommand(connection))
                 {
-                    command.CommandText = @"UPDATE TaskList SET LocalDelete = 1 WHERE LocalId = @LocalId;UPDATE Task SET LocalDelete = 1 WHERE LocalTaskListId = @LocalId;";
+                    command.CommandText = @"UPDATE TaskList SET LocalDelete = 1 WHERE LocalId = @LocalId;
+                                            UPDATE Task SET LocalDelete = 1 WHERE LocalTaskListId = @LocalId;
+                                            DELETE FROM WindowInfo WHERE TaskListId = @LocalId;";
                     command.Parameters.Add(new SQLiteParameter("@LocalId", taskList.LocalId));
                     command.ExecuteNonQuery();
                 }
@@ -228,7 +253,7 @@ CREATE TABLE IF NOT EXISTS Task(
             Log.Info("Local Clear TaskList");
         }
 
-        private LocalTask buildTask(SQLiteDataReader reader)
+        private static LocalTask BuildTask(SQLiteDataReader reader)
         {
             return new LocalTask
             {
@@ -247,7 +272,7 @@ CREATE TABLE IF NOT EXISTS Task(
             };
         }
 
-        public List<LocalTask> GetTasksByList(LocalTaskList list)
+        public List<LocalTask> GetTasksByList(LocalTaskList list,Boolean includeDeleted)
         {
             var result = new List<LocalTask>();
             using (var connection = new SQLiteConnection(ConnectString))
@@ -255,13 +280,17 @@ CREATE TABLE IF NOT EXISTS Task(
                 connection.Open();
                 using (var command = new SQLiteCommand(connection))
                 {
-                    command.CommandText = @"SELECT * FROM Task WHERE LocalTaskListId = @LocalTaskListId";
+                    command.CommandText = @"SELECT * FROM Task WHERE LocalTaskListId = @LocalTaskListId ";
+                    if (!includeDeleted)
+                    {
+                        command.CommandText += " AND LocalDelete = 0 ";
+                    }
                     command.Parameters.Add(new SQLiteParameter("@LocalTaskListId", list.LocalId));
                     using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            result.Add(buildTask(reader));
+                            result.Add(BuildTask(reader));
                         }
                     }
                 }
@@ -380,6 +409,67 @@ WHERE LocalId = @LocalId;";
                 }
             }
             Log.Info("Local Clear Task");
+        }
+
+        private static WindowInfo BuildWindowInfo(SQLiteDataReader reader)
+        {
+            return new WindowInfo
+            {
+                Id = (Int64)reader["Id"],
+                TaskListId = (Int64)reader["TaskListId"],
+                Left = (Double)reader["Left"],
+                Top = (Double)reader["Top"],
+                Height = (Double)reader["Height"],
+                Width = (Double)reader["Width"],
+                IsHideWindow = (Boolean)reader["IsHideWindow"],
+                IsShowCompleted = (Boolean)reader["IsShowCompleted"]
+            };
+        }
+
+        public WindowInfo GetWindowInfoByTaskList(LocalTaskList list)
+        {
+            WindowInfo result = null;
+            using (var connection = new SQLiteConnection(ConnectString))
+            {
+                connection.Open();
+                using (var command = new SQLiteCommand(connection))
+                {
+                    command.CommandText = @"SELECT * FROM WindowInfo WHERE TaskListId = @TaskListId ";
+                    command.Parameters.Add(new SQLiteParameter("@TaskListId", list.LocalId));
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            result = BuildWindowInfo(reader);
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        public void UpdateWindowInfo(WindowInfo winInfo)
+        {
+            using (var connection = new SQLiteConnection(ConnectString))
+            {
+                connection.Open();
+                using (var command = new SQLiteCommand(connection))
+                {
+                    command.CommandText =
+@"UPDATE WindowInfo
+SET Left = @Left ,Top = @Top,Height = @Height,Width = @Width,IsHideWindow = @IsHideWindow,IsShowCompleted = @IsShowCompleted
+WHERE Id = @Id;";
+                    command.Parameters.Add(new SQLiteParameter("@Id", winInfo.Id));
+                    command.Parameters.Add(new SQLiteParameter("@Left", winInfo.Left));
+                    command.Parameters.Add(new SQLiteParameter("@Top", winInfo.Top));
+                    command.Parameters.Add(new SQLiteParameter("@Height", winInfo.Height));
+                    command.Parameters.Add(new SQLiteParameter("@Width", winInfo.Width));
+                    command.Parameters.Add(new SQLiteParameter("@IsHideWindow", winInfo.IsHideWindow));
+                    command.Parameters.Add(new SQLiteParameter("@IsShowCompleted", winInfo.IsShowCompleted));
+                    command.ExecuteNonQuery();
+                }
+            }
+            Log.Info("Local Update WindowInfo");
         }
     }
 }

@@ -14,12 +14,15 @@
         Width="200"
         MinHeight="200"
         MinWidth="200"
+        ShowInTaskbar="False"
+        Activated="OnWindowActivited"
         Deactivated="OnWindowDeactivated"
         MouseLeftButtonDown="WindowDragMove" 
         Background="{Binding Background}"
         DataContext="{Binding TaskViewModel, Source={StaticResource Locator}}">
     <Window.Resources>
         <converter:Object2VisibilityConverter x:Key="Object2VisibilityConverter"/>
+        <converter:HideCompletedTaskConverter x:Key="HideCompletedTaskConverter"/>
     </Window.Resources>
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
@@ -35,7 +38,7 @@
                    Content="{Binding TaskList.Title}" Foreground="{Binding TextForeground}" FontSize="16"/>
             <StackPanel DockPanel.Dock="Right"  Orientation="Horizontal" HorizontalAlignment="Right">
                 <ToggleButton Background="Transparent" BorderThickness="0" 
-                              IsChecked="{Binding IsShowCompleted}">
+                              IsChecked="{Binding IsShowCompleted,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}">
                     <ToggleButton.Template>
                         <ControlTemplate TargetType="{x:Type ToggleButton}">
                             <ContentPresenter/>
@@ -69,6 +72,7 @@
                     <Image Width="32" Height="32"  Source="..\Images\Edit.png"></Image>
                 </Button>
                 <Button Background="Transparent" BorderThickness="0"
+                        Command="{Binding DeleteTaskCommand}"
                         CommandParameter="{Binding SelectedItem, ElementName=ListBox}"
                         Visibility="{Binding SelectedItem, ElementName=ListBox, Converter={StaticResource Object2VisibilityConverter}}">
                     <Image Width="32" Height="32"  Source="..\Images\Delete.png"></Image>
@@ -85,7 +89,25 @@
             ItemsSource="{Binding Tasks}" 
             Background="Transparent"
             BorderThickness="0,1,0,0"
+            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
             HorizontalContentAlignment="Stretch">
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="{x:Type ListBoxItem}">
+                    <Style.Triggers>
+                        <DataTrigger Value="True">
+                            <DataTrigger.Binding>
+                                <MultiBinding Converter="{StaticResource HideCompletedTaskConverter}">
+                                    <Binding Path="IsCompleted" />
+                                    <Binding Path="DataContext.IsShowCompleted"
+                                             UpdateSourceTrigger="PropertyChanged"
+                                             RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}" />
+                                </MultiBinding>
+                            </DataTrigger.Binding>
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ListBox.ItemContainerStyle>
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid GotFocus="OnItemGotFocus" Margin="0,2">
@@ -93,9 +115,14 @@
                             <ColumnDefinition Width="auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <CheckBox Grid.Column="0" IsChecked="{Binding IsCompleted}" VerticalAlignment="Center" />
+                        <CheckBox Grid.Column="0" VerticalAlignment="Center"
+                                  IsChecked="{Binding IsCompleted}" 
+                                  Checked="OnItemChecked"/>
                         <TextBox Grid.Column="1" BorderThickness="0"
                                  Text="{Binding Title}" 
+                                 TextChanged="OnItemTextBoxChanged"
+                                 LostFocus="OnItemTextBoxLostFocus"
+                                 TextWrapping="Wrap"
                                  Foreground="{Binding DataContext.TextForeground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}"
                                  Background="Transparent"/>
                     </Grid>

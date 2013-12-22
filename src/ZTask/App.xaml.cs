@@ -16,8 +16,8 @@ namespace ZTask
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            //AppConfig.Load().Proxy = "http://127.0.0.1:8087";
-            //new SyncUtil().Sync();
+//            AppConfig.Load().Proxy = "http://127.0.0.1:8087";
+//            new SyncUtil().Sync();
             Config.Background = "#77000000";
             Config.TextForeground = "#FFFFFFFF";
             new TaskWindow(1).Show();
