@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using ZTask.Model.Local;
 using ZTask.ViewModel;
 
 namespace ZTask.View
@@ -18,17 +19,34 @@ namespace ZTask.View
         const UInt32 SWP_NOACTIVATE = 0x0010;
         static readonly IntPtr HWND_BOTTOM = new IntPtr(1);
 
-        private ITaskViewModel ViewModel;
+        
+
+        private readonly TaskViewModel _viewModel;
         public TaskWindow()
         {
             InitializeComponent();
-            ViewModel = this.DataContext as ITaskViewModel;
-            ViewModel.View = this;
+            _viewModel = this.DataContext as TaskViewModel;
+            _viewModel.View = this;
         }
 
-        public TaskWindow(Int64 taskListId):this()
+        /// <summary>
+        /// 在窗口初始化的时候不会触发ToggleButton的ToggleButton.Template
+        /// 所以在这里手动触发一次
+        /// </summary>
+        public TaskWindow(WindowInfo winInfo):this()
         {
-            (ViewModel as TaskViewModel).LoadData(taskListId);
+            _viewModel.LoadData(winInfo);
+            this.IsShowCompletedButton.IsChecked = _viewModel.IsShowCompleted;
+        }
+
+        private void OnWindowLoaded(object sender, RoutedEventArgs e)
+        {
+            _viewModel.LoadLocationCommand.Execute(null);
+        }
+
+        private void OnWindowClosed(object sender, EventArgs e)
+        {
+            _viewModel.SaveLocationCommand.Execute(null);
         }
 
         private void WindowDragMove(object sender, MouseButtonEventArgs e)
@@ -45,21 +63,20 @@ namespace ZTask.View
                                                        | SWP_NOACTIVATE);
         }
 
-        private void OnWindowDeactivated(object sender, EventArgs eventArgs)
-        {
-            this.ListBox.SelectedItem = null;
-        }
-
         private void OnItemGotFocus(object sender, RoutedEventArgs e)
         {
             this.ListBox.SelectedItem = (sender as Grid).DataContext; 
         }
 
+        private TextBox _lastChangedTextBox;
         //TextBox完成编辑时调用UpdateTaskCommand
+        //OnItemTextBoxChanged时认为开始修改
+        //OnItemTextBoxLostFocus或者OnWindowDeactivated时认为修改完成
         private void OnItemTextBoxChanged(object sender, TextChangedEventArgs e)
         {
             //使用Tag标记文本已经有变化
             (sender as TextBox).Tag = true;
+            _lastChangedTextBox = sender as TextBox;
         }
 
         private void OnItemTextBoxLostFocus(object sender, RoutedEventArgs e)
@@ -67,16 +84,29 @@ namespace ZTask.View
             var flag = (sender as TextBox).Tag as Boolean?;
             if (flag == true)
             {
-                ViewModel.UpdateTaskCommand.Execute(this.ListBox.SelectedItem);
+                _viewModel.UpdateTaskCommand.Execute(((TextBox)e.OriginalSource).DataContext);
                 (sender as TextBox).Tag = false;
             }
         }
 
-        //CheckBox变化时调用UpdateTaskCommand
-        private void OnItemChecked(object sender, RoutedEventArgs e)
+        private void OnWindowDeactivated(object sender, EventArgs eventArgs)
         {
-            ViewModel.UpdateTaskCommand.Execute(this.ListBox.SelectedItem);
+            if(_lastChangedTextBox != null)
+            {
+                var flag = _lastChangedTextBox.Tag as Boolean?;
+                if(flag == true)
+                {
+                    _viewModel.UpdateTaskCommand.Execute(_lastChangedTextBox.DataContext);
+                    _lastChangedTextBox.Tag = false;
+                }
+            }
+            this.ListBox.SelectedItem = null;
         }
 
+        //CheckBox变化时调用UpdateTaskCommand
+        private void OnItemCheckChanged(object sender, RoutedEventArgs e)
+        {
+            _viewModel.UpdateTaskCommand.Execute(((CheckBox)e.OriginalSource).DataContext);
+        }
     }
 }

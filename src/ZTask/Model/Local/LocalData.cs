@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
-using System.Windows;
 using log4net;
 
-namespace ZTask.Model.Core.Local
+namespace ZTask.Model.Local
 {
-    class LocalData
+    public class LocalData
     {
         private static readonly ILog Log = Util.Log; 
 
@@ -43,7 +42,7 @@ namespace ZTask.Model.Core.Local
         {
             if (obj == DBNull.Value || obj == null)
                 return null;
-            return (DateTime) obj;
+            return DateTime.Parse(obj.ToString());
         }
 
         /// <summary>
@@ -426,6 +425,31 @@ WHERE LocalId = @LocalId;";
             };
         }
 
+        public List<WindowInfo> GetAllWindowInfo(Boolean includeHide)
+        {
+            var result = new List<WindowInfo>();
+            using(var connection = new SQLiteConnection(ConnectString))
+            {
+                connection.Open();
+                using(var command = new SQLiteCommand(connection))
+                {
+                    command.CommandText = @"SELECT * FROM WindowInfo ";
+                    if(!includeHide)
+                    {
+                        command.CommandText += " WHERE IsHideWindow = 0 ";
+                    }
+                    using(var reader = command.ExecuteReader())
+                    {
+                        while(reader.Read())
+                        {
+                            result.Add(BuildWindowInfo(reader));
+                        }
+                    }
+                }
+            }
+            return result;
+        } 
+
         public WindowInfo GetWindowInfoByTaskList(LocalTaskList list)
         {
             WindowInfo result = null;
@@ -469,7 +493,57 @@ WHERE Id = @Id;";
                     command.ExecuteNonQuery();
                 }
             }
-            Log.Info("Local Update WindowInfo");
+        }
+
+        private static ManagerModel BuildManagerModel(SQLiteDataReader reader)
+        {
+            return new ManagerModel
+            {
+                ListId = (Int64)reader["ListId"],
+                Title = CastToString(reader["Title"]),
+                IsHideWindow = (Boolean)reader["IsHideWindow"],
+            };
+        }
+
+        public List<ManagerModel> GetAllManagerModel()
+        {
+            var result = new List<ManagerModel>();
+            using(var connection = new SQLiteConnection(ConnectString))
+            {
+                connection.Open();
+                using(var command = new SQLiteCommand(connection))
+                {
+                    command.CommandText =
+@"select l.LocalId as ListId,l.Title as Title,w.IsHideWindow as IsHideWindow
+from TaskList l,WindowInfo w
+where w.TaskListId = l.LocalId and l.LocalDelete = 0";
+                    using(var reader = command.ExecuteReader())
+                    {
+                        while(reader.Read())
+                        {
+                            result.Add(BuildManagerModel(reader));
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        public void UpdateManagerModel(ManagerModel model)
+        {
+            using(var connection = new SQLiteConnection(ConnectString))
+            {
+                connection.Open();
+                using(var command = new SQLiteCommand(connection))
+                {
+                    command.CommandText =@"update TaskList set Title = @Title where LocalId = @ListId;
+                                           update WindowInfo set IsHideWindow = @IsHideWindow where TaskListId = @ListId;";
+                    command.Parameters.Add(new SQLiteParameter("@Title", model.Title));
+                    command.Parameters.Add(new SQLiteParameter("@ListId", model.ListId));
+                    command.Parameters.Add(new SQLiteParameter("@IsHideWindow", model.IsHideWindow));
+                    command.ExecuteNonQuery();
+                }
+            }
         }
     }
 }

@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Google.Apis.Auth.OAuth2;
+using Google.Apis.Http;
 using Google.Apis.Services;
 using Google.Apis.Tasks.v1;
 using Google.Apis.Tasks.v1.Data;
 using Google.Apis.Util.Store;
 using log4net;
 
-namespace ZTask.Model.Core.Cloud
+namespace ZTask.Model.Cloud
 {
     public class CloudData : IDisposable
     {
@@ -29,7 +30,7 @@ namespace ZTask.Model.Core.Cloud
                             "user", CancellationToken.None, new FileDataStore("Tasks.Auth.Store")).Result;
             _taskService = new TasksService(new BaseClientService.Initializer()
             {
-                HttpClientFactory = new ProxyableHttpClientFactory(Config.Proxy),
+                HttpClientFactory = String.IsNullOrEmpty(Config.Proxy) ? new HttpClientFactory() : new ProxyableHttpClientFactory(Config.Proxy),
                 HttpClientInitializer = credential,
             });
             Log.Info("Get TasksService Success");
@@ -87,7 +88,10 @@ namespace ZTask.Model.Core.Cloud
 
         public void Dispose()
         {
-            _taskService.Dispose();
+            if (_taskService != null)
+            {
+                _taskService.Dispose();
+            }
         }
     }
 }

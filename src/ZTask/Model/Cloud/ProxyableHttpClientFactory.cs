@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Http;
 using Google.Apis.Http;
 
-namespace ZTask.Model.Core.Cloud
+namespace ZTask.Model.Cloud
 {
     class ProxyableHttpClientFactory : HttpClientFactory
     {

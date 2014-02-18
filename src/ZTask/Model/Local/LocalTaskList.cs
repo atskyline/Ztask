@@ -1,7 +1,7 @@
 ﻿using System;
 using Google.Apis.Tasks.v1.Data;
 
-namespace ZTask.Model.Core.Local
+namespace ZTask.Model.Local
 {
     public class LocalTaskList : TaskList, ICloneable
     {

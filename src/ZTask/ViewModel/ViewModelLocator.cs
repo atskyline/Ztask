@@ -17,25 +17,28 @@ namespace ZTask.ViewModel
 {
     public class ViewModelLocator
     {
-        static ViewModelLocator()
-        {
-            ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
 
-            if (ViewModelBase.IsInDesignModeStatic)
-            {
-                SimpleIoc.Default.Register<ITaskViewModel, TaskViewModelDesign>();
-            }
-            else
-            {
-                SimpleIoc.Default.Register<ITaskViewModel, TaskViewModel>();
-            }
-        }
-
-        public ITaskViewModel TaskViewModel
+        public TaskViewModel TaskViewModel
         {
             get
             {
-                return ServiceLocator.Current.GetInstance<ITaskViewModel>();
+                if (ViewModelBase.IsInDesignModeStatic)
+                {
+                    return new TaskViewModelDesign();
+                }
+                return new TaskViewModel();
+            }
+        }
+
+        public ManagerViewModel ManagerViewModel
+        {
+            get
+            {
+                if(ViewModelBase.IsInDesignModeStatic)
+                {
+                    return new ManagerViewModelDesign();
+                }
+                return new ManagerViewModel();
             }
         }
 

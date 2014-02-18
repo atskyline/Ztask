@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Google.Apis.Tasks.v1.Data;
 using log4net;
-using ZTask.Model.Core.Cloud;
-using ZTask.Model.Core.Local;
+using ZTask.Model.Cloud;
+using ZTask.Model.Local;
 
-namespace ZTask.Model.Core
+namespace ZTask.Model
 {
     class SyncUtil
     {
@@ -34,6 +34,8 @@ namespace ZTask.Model.Core
                 {
                     SyncTaskList(list);
                 });
+                Log.Info("Sync Task Local Clear");
+                _localData.ClearTask();
             }
         }
 
@@ -93,7 +95,6 @@ namespace ZTask.Model.Core
             _localData.ClearTaskList();
         }
 
-
         private void SyncTaskList(LocalTaskList list)
         {
             Log.Info("Start Sync TaskList: " + list);
@@ -146,13 +147,11 @@ namespace ZTask.Model.Core
             Log.Info("Sync Task Cloud Delete");
             localTasks.ForEach((task) =>
             {
-                if (task.Id != null && task.LocalDelete == true && task.LocalDelete == false)
+                if (task.Id != null && task.LocalDelete == true)
                 {
                     _cloudData.DeleteTask(task,list);
                 }
             });
-            Log.Info("Sync Task Local Clear");
-            _localData.ClearTask();
         }
 
         /// <summary>

@@ -4,32 +4,31 @@ using System.Windows.Media;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using Google.Apis.Tasks.v1.Data;
-using ZTask.Model.Core.Local;
+using ZTask.Model.Local;
 using ZTask.View;
 
 namespace ZTask.ViewModel
 {
-    public class TaskViewModel : ViewModelBase, ITaskViewModel
+    public class TaskViewModel : ViewModelBase
     {
-        private static readonly AppConfig Config = AppConfig.Load();
+        protected static readonly AppConfig Config = AppConfig.Load();
         private LocalData _localData;
 
         //Data
-        public TaskWindow View { set; private get; }
-        public LocalTaskList TaskList { get; private set; }
-        public ObservableCollection<LocalTask> Tasks { get; private set; }
-        public WindowInfo WindowInfo { get; private set; }
+        public virtual TaskWindow View { set; protected get; }
+        public virtual LocalTaskList TaskList { get; protected set; }
+        public virtual ObservableCollection<LocalTask> Tasks { get; protected set; }
+        public virtual WindowInfo WindowInfo { get; set; }
         //Command
-        public RelayCommand LoadWindowInfo { get; private set; }
-        public RelayCommand SaveWindowInfo { get; private set; }
-        public RelayCommand AddTaskCommand { get; private set; }
-        public RelayCommand<LocalTask> EditTaskCommand { get; private set; }
-        public RelayCommand<LocalTask> UpdateTaskCommand { get; private set; }
-        public RelayCommand<LocalTask> DeleteTaskCommand { get; private set; }
-        public RelayCommand CloseWindowCommand { get; private set; }
+        public virtual RelayCommand LoadLocationCommand { get; protected set; }
+        public virtual RelayCommand SaveLocationCommand { get; protected set; }
+        public virtual RelayCommand AddTaskCommand { get; protected set; }
+        public virtual RelayCommand<LocalTask> UpdateTaskCommand { get; protected set; }
+        public virtual RelayCommand<LocalTask> DeleteTaskCommand { get; protected set; }
+        public virtual RelayCommand CloseWindowCommand { get; protected set; }
         //Config
-        public Brush Background { get; private set; }
-        public Brush TextForeground { get; private set; }
+        public virtual Brush Background { get; protected set; }
+        public virtual Brush TextForeground { get; protected set; }
 
         public Boolean IsShowCompleted
         {
@@ -49,23 +48,30 @@ namespace ZTask.ViewModel
 
         public TaskViewModel()
         {
-            Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(Config.Background));
-            TextForeground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(Config.TextForeground));
+            Init();
+        }
+
+        protected virtual void Init()
+        {
             _localData = LocalData.Instance;
             Tasks = new ObservableCollection<LocalTask>();
+            //读取配置
+            Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(Config.Background));
+            TextForeground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(Config.TextForeground));
+            
             InitCommand();
         }
 
         private void InitCommand()
         {
-            LoadWindowInfo = new RelayCommand(() =>
+            LoadLocationCommand = new RelayCommand(() =>
             {
                 View.Left = WindowInfo.Left;
                 View.Top = WindowInfo.Top;
                 View.Height = WindowInfo.Height;
                 View.Width = WindowInfo.Width;
             });
-            SaveWindowInfo = new RelayCommand(() =>
+            SaveLocationCommand = new RelayCommand(() =>
             {
                 WindowInfo.Left = View.Left;
                 WindowInfo.Top = View.Top;
@@ -75,12 +81,8 @@ namespace ZTask.ViewModel
             });
             AddTaskCommand = new RelayCommand(() =>
             {
-                var newTask = _localData.InsertTask(new LocalTask());
+                var newTask = _localData.InsertTask(new LocalTask() { LocalTaskListId = TaskList.LocalId});
                 Tasks.Add(newTask);
-            });
-            EditTaskCommand = new RelayCommand<LocalTask>((task) =>
-            {
-                //TODO 显示TaskDetail界面
             });
             UpdateTaskCommand = new RelayCommand<LocalTask>((task) =>
             {
@@ -99,12 +101,20 @@ namespace ZTask.ViewModel
             });
         }
 
-        public void LoadData(Int64 taskListId)
+        public void LoadData(WindowInfo winInfo)
         {
-            TaskList = _localData.GetTaskList(taskListId);
+            WindowInfo = winInfo;
+            LoadData();
+        }
+
+        /// <summary>
+        /// 根据WindowInfo加载数据
+        /// </summary>
+        public void LoadData()
+        {
+            TaskList = _localData.GetTaskList(WindowInfo.TaskListId);
             RaisePropertyChanged("TaskList");
-            WindowInfo = _localData.GetWindowInfoByTaskList(TaskList);
-            _localData.GetTasksByList(TaskList,false).ForEach(task => Tasks.Add(task));
+            _localData.GetTasksByList(TaskList, false).ForEach(task => Tasks.Add(task));
         }
     }
 }

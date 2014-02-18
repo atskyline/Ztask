@@ -9,8 +9,10 @@ namespace ZTask
         public String Proxy { get; set; }
         public String Background { get; set; }
         public String TextForeground { get; set; }
+        public Boolean? AutoSync { get; set; }
+        public Double? AutoSyncInterval { get; set; }
 
-        public static String ConfigFilePath = "./config.yaml";
+        public static String ConfigFilePath = ".\\config.yaml";
 
         private static AppConfig _instance;
         public static AppConfig Load()
